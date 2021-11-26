@@ -1,4 +1,3 @@
-#include "output/sdl_cava.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -6,6 +5,7 @@
 #include <SDL2/SDL.h>
 
 #include "util.h"
+#include "output/sdl_cava.h"
 
 SDL_Window *gWindow = NULL;
 
@@ -111,6 +111,31 @@ int draw_sdl(int bars_count, int bar_width, int bar_spacing, int remainder, int 
 
     return rc;
 }
+
+int draw_sdl_one_color(uint16_t r, uint16_t g, uint16_t b, int h, int w, int frame_time) {
+
+    int rc = 0;
+    SDL_Rect fillRect;
+    // draw new bar
+    fillRect.x = 0;
+    fillRect.y = 0;
+    fillRect.w = w;
+    fillRect.h = h;
+    SDL_SetRenderDrawColor(gRenderer, r, g, b, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
+    SDL_RenderPresent(gRenderer);
+
+    SDL_Delay(frame_time);
+
+    SDL_PollEvent(&e);
+    if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+        rc = -1;
+    if (e.type == SDL_QUIT)
+        rc = -2;
+
+    return rc;
+}
+
 
 // general: cleanup
 void cleanup_sdl(void) {

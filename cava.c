@@ -243,6 +243,11 @@ as of 0.4.0 all options are specified in config file, see in '/home/username/.co
         }
     }
 
+    uint16_t R, G, B = 0;
+    int col_mem = 0;
+    int bass_avg_old = 0;
+    int vol_mem = 0;
+
     // general: main loop
     while (1) {
 
@@ -1054,6 +1059,55 @@ as of 0.4.0 all options are specified in config file, see in '/home/username/.co
                         bars_right[n] = temp_r[n];
                     }
                 }
+
+                /***************
+                // just my code
+                ***************/
+
+                int max = 0;
+                int max_index = 0;
+                int bass_avg = 0;
+
+                for (int n = 0; n < number_of_bars; n++) {
+                    if (bars_left[n] > max) {
+                        max = bars_left[n];
+                        max_index = n;
+                    }
+                    if (n < bass_cut_off_bar) {
+                        bass_avg += bars_left[n] / bass_cut_off_bar;
+                    }
+                }
+
+                int a = max_index * 10 + 90 * col_mem / 100;
+                col_mem = a;
+                a *= 2 * 1530;
+                a /= 100 * number_of_bars;
+                a = a % 1530;
+                uint16_t c_r = 255 - max(min(a - 255, 255), 0) + max(min(a - 1020, 255), 0);
+                uint16_t c_g = max(min(a - 512, 255), 0) - max(min(a - 1275, 255), 0);
+                uint16_t c_b = min(a, 255) - max(min(a - 765, 255), 0);
+
+                int b = max * 20 + 80 * vol_mem / 100;
+                vol_mem = b;
+                c_r = c_r * b / 20000;
+                c_g = c_g * b / 20000;
+                c_b = c_b * b / 20000;
+
+                int bb = bass_avg / 3 + (bass_avg - bass_avg_old) * (bass_avg - bass_avg_old) / 180;
+                bass_avg_old = bass_avg;
+                c_r += bb;
+                c_g += bb;
+                c_b += bb;
+
+                //printf("i%3d %3d %3d\n", a, b, bb);
+
+                R = max(min(c_r, 255), 0);
+                G = max(min(c_g, 255), 0);
+                B = max(min(c_b, 255), 0);
+
+                printf("#%3d;%3d;%3d\n", R, G, B);
+                // end of me code
+
                 if (p.stereo)
                     number_of_bars *= 2;
                 // process [filter]
@@ -1177,8 +1231,9 @@ as of 0.4.0 all options are specified in config file, see in '/home/username/.co
 #endif
 #ifdef SDL
                 case OUTPUT_SDL:
-                    rc = draw_sdl(number_of_bars, p.bar_width, p.bar_spacing, remainder, height,
-                                  bars, previous_frame, frame_time_msec);
+                    // rc = draw_sdl(number_of_bars, p.bar_width, p.bar_spacing, remainder, height,
+                    // bars, previous_frame, frame_time_msec);
+                    rc = draw_sdl_one_color(R, G, B, p.sdl_height, p.sdl_width, frame_time_msec);
                     break;
 #endif
                 case OUTPUT_NONCURSES:
