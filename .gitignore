@@ -1,7 +1,9 @@
 cava
+*~
 *.so
 *.so.0
 *.o
+*.o.d
 *.a
 .deps/
 .libs/

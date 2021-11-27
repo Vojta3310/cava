@@ -1089,9 +1089,9 @@ as of 0.4.0 all options are specified in config file, see in '/home/username/.co
 
                 int b = max * 20 + 80 * vol_mem / 100;
                 vol_mem = b;
-                c_r = c_r * b / 20000;
-                c_g = c_g * b / 20000;
-                c_b = c_b * b / 20000;
+                c_r = c_r * b / 30000;
+                c_g = c_g * b / 30000;
+                c_b = c_b * b / 30000;
 
                 int bb = bass_avg / 3 + (bass_avg - bass_avg_old) * (bass_avg - bass_avg_old) / 180;
                 bass_avg_old = bass_avg;
@@ -1099,13 +1099,14 @@ as of 0.4.0 all options are specified in config file, see in '/home/username/.co
                 c_g += bb;
                 c_b += bb;
 
-                //printf("i%3d %3d %3d\n", a, b, bb);
+                // printf("i%3d %3d %3d\n", a, b, bb);
 
                 R = max(min(c_r, 255), 0);
                 G = max(min(c_g, 255), 0);
                 B = max(min(c_b, 255), 0);
 
-                printf("#%3d;%3d;%3d\n", R, G, B);
+                printf("r%03dg%03db%03d\n", max(0, (int)(30 * log(R / 90.0))),
+                       max(0, (int)(30 * log(G / 90.0))), max(0, (int)(30 * log(B / 90.0))));
                 // end of me code
 
                 if (p.stereo)
